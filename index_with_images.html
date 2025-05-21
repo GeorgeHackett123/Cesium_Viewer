@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CesiumJS Viewer with Camera Points</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html, body, #cesiumContainer {
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script type="module">
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlM2E1OTBmZC0yZmVjLTQ4NWEtYWIzYi05MGNiMzgwNTU0YWUiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDc4MzAzMzF9.teseThZuq5jOmYm9r6-BauT5XrbJ2gxoO3GirDynFQk';
+
+    async function init() {
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+        baseLayerPicker: true,
+        timeline: false,
+        animation: false
+      });
+
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+
+      const geojsonUrl = 'camera_points_final.geojson';
+
+      const dataSource = await Cesium.GeoJsonDataSource.load(geojsonUrl, {
+        clampToGround: false
+      });
+
+      viewer.dataSources.add(dataSource);
+      viewer.flyTo(dataSource);
+
+      const entities = dataSource.entities.values;
+      for (let i = 0; i < entities.length; i++) {
+        const entity = entities[i];
+
+        entity.point = new Cesium.PointGraphics({
+          pixelSize: 10,
+          color: Cesium.Color.RED,
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 1
+        });
+
+        const labelText = entity.properties?.['#Label'];
+        entity.label = new Cesium.LabelGraphics({
+          text: labelText || "Camera",
+          font: '14px sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -15)
+        });
+
+        const imageURL = `images/${labelText}`;
+        entity.description = `
+          <div style="max-width:300px">
+            <img src="${imageURL}" alt="Image" style="max-width:100%; border:1px solid #ccc; margin-bottom:5px;">
+            <div><strong>${labelText}</strong></div>
+          </div>
+        `;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
