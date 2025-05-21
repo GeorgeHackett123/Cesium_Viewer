@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cesium + Marzipano (Verified Build)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marzipano@0.10.1/marzipano.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html, body, #cesiumContainer {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #viewerPopup {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 600px;
+      height: 400px;
+      background: #000;
+      border: 2px solid #888;
+      border-radius: 6px;
+      z-index: 999;
+      display: none;
+    }
+    #marzipanoViewer {
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="viewerPopup">
+    <div class="close-btn" onclick="document.getElementById('viewerPopup').style.display='none';">✖</div>
+    <div id="marzipanoViewer"></div>
+  </div>
+
+  <script type="module">
+    function loadMarzipano(imagePath) {
+      const popup = document.getElementById("viewerPopup");
+      const container = document.getElementById("marzipanoViewer");
+      popup.style.display = "block";
+      container.innerHTML = "";
+
+      const viewer = new Marzipano.Viewer(container);
+      const source = Marzipano.ImageUrlSource.fromString(imagePath, { crossOrigin: "anonymous" });
+      const geometry = new Marzipano.EquirectGeometry([{ width: 6000 }]);
+      const view = new Marzipano.RectilinearView(null, Marzipano.RectilinearView.limit.traditional(1024, 100*Math.PI/180));
+
+      const scene = viewer.createScene({
+        source: source,
+        geometry: geometry,
+        view: view,
+        pinFirstLevel: true
+      });
+
+      scene.switchTo();
+    }
+
+    async function init() {
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        imageryProvider: new Cesium.OpenStreetMapImageryProvider(),
+        terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+        baseLayerPicker: false,
+        timeline: false,
+        animation: false,
+        infoBox: false,
+        selectionIndicator: false
+      });
+
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+
+      // Manually add one test point for image `1744746827.622355.jpg`
+      const entity = viewer.entities.add({
+        name: "360 Image",
+        position: Cesium.Cartesian3.fromDegrees(-46.625290, -23.533773, 10),
+        point: {
+          pixelSize: 12,
+          color: Cesium.Color.YELLOW
+        },
+        label: {
+          text: "360 Test",
+          font: '14px sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK,
+          pixelOffset: new Cesium.Cartesian2(0, -20)
+        },
+        properties: {
+          imageURL: "images/1744746827.622355.jpg"
+        }
+      });
+
+      viewer.flyTo(entity);
+
+      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+      handler.setInputAction((movement) => {
+        const picked = viewer.scene.pick(movement.position);
+        if (picked?.id?.properties?.imageURL) {
+          const url = picked.id.properties.imageURL.getValue();
+          console.log("Opening 360:", url);
+          loadMarzipano(url);
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
+
+    init();
+  </script>
+</body>
+</html>
