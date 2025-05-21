@@ -35,18 +35,20 @@
       viewer.dataSources.add(dataSource);
       viewer.flyTo(dataSource);
 
-      // Style each point
       const entities = dataSource.entities.values;
       for (let i = 0; i < entities.length; i++) {
         const entity = entities[i];
+
         entity.point = new Cesium.PointGraphics({
           pixelSize: 10,
           color: Cesium.Color.RED,
           outlineColor: Cesium.Color.BLACK,
           outlineWidth: 1
         });
+
+        const labelText = entity.properties?.['#Label'];
         entity.label = new Cesium.LabelGraphics({
-          text: entity.properties?.Name || "Camera",
+          text: labelText || "Camera",
           font: '14px sans-serif',
           fillColor: Cesium.Color.WHITE,
           showBackground: true,
@@ -54,6 +56,14 @@
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           pixelOffset: new Cesium.Cartesian2(0, -15)
         });
+
+        const imageURL = `images/${labelText}`;
+        entity.description = `
+          <div style="max-width:300px">
+            <img src="${imageURL}" alt="Image" style="max-width:100%; border:1px solid #ccc; margin-bottom:5px;">
+            <div><strong>${labelText}</strong></div>
+          </div>
+        `;
       }
     }
 
@@ -61,3 +71,4 @@
   </script>
 </body>
 </html>
+
