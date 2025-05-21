@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cesium + Marzipano (Offline Safe)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marzipano@0.10.1/marzipano.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html, body, #cesiumContainer {
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: sans-serif;
+    }
+    #viewerPopup {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 600px;
+      height: 400px;
+      background: #000;
+      border: 2px solid #888;
+      border-radius: 6px;
+      z-index: 999;
+      display: none;
+    }
+    #marzipanoViewer {
+      width: 100%; height: 100%; border-radius: 6px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="viewerPopup">
+    <div class="close-btn" onclick="document.getElementById('viewerPopup').style.display='none';">✖</div>
+    <div id="marzipanoViewer"></div>
+  </div>
+
+  <script type="module">
+    function loadMarzipano(imagePath) {
+      const popup = document.getElementById("viewerPopup");
+      const container = document.getElementById("marzipanoViewer");
+      popup.style.display = "block";
+      container.innerHTML = "";
+
+      const viewer = new Marzipano.Viewer(container);
+      const source = Marzipano.ImageUrlSource.fromString(imagePath, {
+        crossOrigin: 'anonymous'
+      });
+      const geometry = new Marzipano.EquirectGeometry([{ width: 6000 }]);
+      const view = new Marzipano.RectilinearView(null, Marzipano.RectilinearView.limit.traditional(1024, 100*Math.PI/180));
+
+      const scene = viewer.createScene({
+        source: source,
+        geometry: geometry,
+        view: view,
+        pinFirstLevel: true
+      });
+
+      scene.switchTo();
+    }
+
+    async function init() {
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+        imageryProvider: new Cesium.OpenStreetMapImageryProvider(),
+        baseLayerPicker: false,
+        timeline: false,
+        animation: false,
+        infoBox: false,
+        selectionIndicator: false
+      });
+
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+
+      const geojsonUrl = 'camera_points_final.geojson';
+      const dataSource = await Cesium.GeoJsonDataSource.load(geojsonUrl, { clampToGround: false });
+      viewer.dataSources.add(dataSource);
+      viewer.flyTo(dataSource);
+
+      const entities = dataSource.entities.values;
+
+      for (let i = 0; i < entities.length; i++) {
+        const entity = entities[i];
+        const labelText = entity.properties?.['#Label'];
+        const imageURL = `images/${labelText}`;
+
+        entity.point = new Cesium.PointGraphics({
+          pixelSize: 10,
+          color: Cesium.Color.RED,
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 1
+        });
+
+        entity.label = new Cesium.LabelGraphics({
+          text: labelText || "Camera",
+          font: '14px sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -15)
+        });
+
+        entity.imageURL = imageURL;
+      }
+
+      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+      handler.setInputAction((movement) => {
+        const picked = viewer.scene.pick(movement.position);
+        if (picked?.id?.imageURL) {
+          loadMarzipano(picked.id.imageURL);
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
+
+    init();
+  </script>
+</body>
+</html>
