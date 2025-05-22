@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Cesium + View Cones</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+  <style>
+    html, body, #cesiumContainer {
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script>
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain(),
+      shouldAnimate: true
+    });
+
+    const degreesToRadians = Cesium.Math.toRadians;
+
+    function getViewConePoints(center, yawDegrees, distance = 20, width = 10) {
+      const heading = degreesToRadians(yawDegrees);
+      const halfWidth = width / 2;
+
+      const dx = Math.cos(heading);
+      const dy = Math.sin(heading);
+
+      const leftX = center[0] + (dx * distance) - (dy * halfWidth);
+      const leftY = center[1] + (dy * distance) + (dx * halfWidth);
+
+      const rightX = center[0] + (dx * distance) + (dy * halfWidth);
+      const rightY = center[1] + (dy * distance) - (dx * halfWidth);
+
+      return [
+        Cesium.Cartesian3.fromDegrees(center[0], center[1], center[2]), // Apex
+        Cesium.Cartesian3.fromDegrees(leftX, leftY, center[2]),
+        Cesium.Cartesian3.fromDegrees(rightX, rightY, center[2])
+      ];
+    }
+
+    Cesium.GeoJsonDataSource.load('OrientedImagery.geojson').then((dataSource) => {
+      viewer.dataSources.add(dataSource);
+      const entities = dataSource.entities.values;
+
+      for (const entity of entities) {
+        const position = entity.position.getValue(Cesium.JulianDate.now());
+        const carto = Cesium.Cartographic.fromCartesian(position);
+        const lon = Cesium.Math.toDegrees(carto.longitude);
+        const lat = Cesium.Math.toDegrees(carto.latitude);
+        const alt = carto.height;
+
+        const yaw = entity.properties.Yaw_est;
+
+        if (Cesium.defined(yaw)) {
+          const conePoints = getViewConePoints([lon, lat, alt], yaw);
+
+          viewer.entities.add({
+            polygon: {
+              hierarchy: new Cesium.PolygonHierarchy(conePoints),
+              material: Cesium.Color.RED.withAlpha(0.4),
+              extrudedHeight: alt - 2,
+              perPositionHeight: true
+            }
+          });
+        }
+
+        entity.billboard = {
+          image: 'https://cdn-icons-png.flaticon.com/512/149/149059.png',
+          scale: 0.05,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM
+        };
+
+        entity.label = {
+          text: entity.properties['#Label']?.getValue() || '',
+          font: '12px sans-serif',
+          verticalOrigin: Cesium.VerticalOrigin.TOP,
+          pixelOffset: new Cesium.Cartesian2(0, -20)
+        };
+      }
+    });
+  </script>
+</body>
+</html>
