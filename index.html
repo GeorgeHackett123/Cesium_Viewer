@@ -59,7 +59,7 @@
   </div>
 
   <script type="module">
-    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiNDE2ZTg1OC03N2RkLTQ5YmQtYTYwYS0wODcwMGNmNmM1NzciLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDgwMTc1Njd9.W6r5MSdcAUFrMT1NXOr3TYDx4JCxyWHUTpVhP6_0bAg';
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0ZWQ4ZTE5ZC0wOTMxLTQ0YTEtOGVlYy00MWQ1YWM0NDcxNTYiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDgzNDgwOTR9.kCuvoIJoaF-flGQAYcV8-suLFAAe9u-lO5tnsVnpTZ0';
 
     async function init() {
       const viewer = new Cesium.Viewer('cesiumContainer', {
@@ -72,7 +72,7 @@
       });
       viewer.scene.globe.depthTestAgainstTerrain = true;
 
-      const cameraGeoJSON = 'camera_points_final.geojson';
+      const cameraGeoJSON = './data/camera_points_final.geojson';
       const dataSource = await Cesium.GeoJsonDataSource.load(cameraGeoJSON, { clampToGround: false });
       viewer.dataSources.add(dataSource);
       viewer.flyTo(dataSource);
