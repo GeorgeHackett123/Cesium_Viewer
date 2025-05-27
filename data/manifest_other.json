@@ -1,15 +1,10 @@
 [ 
-    "blocks.geojson" 
  
-    "hatches.geojson" 
- 
-    "inserts.geojson" 
- 
-    "lines.geojson" 
- 
-    "points.geojson" 
- 
-    "polylines.geojson" 
- 
-    "texts.geojson" 
+   "blocks.geojson" 
+   "hatches.geojson" 
+   "inserts.geojson" 
+   "lines.geojson" 
+   "points.geojson" 
+   "polylines.geojson" 
+   "texts.geojson" 
 ] 
