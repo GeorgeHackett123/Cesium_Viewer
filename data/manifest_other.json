@@ -1,9 +1,10 @@
 [
-"blocks.geojson"
-"hatches.geojson"
-"inserts.geojson"
-"lines.geojson"
-"points.geojson"
-"polylines.geojson"
-"texts.geojson"ECHO is off.
+
+  "blocks.geojson"
+  "hatches.geojson"
+  "inserts.geojson"
+  "lines.geojson"
+  "points.geojson"
+  "polylines.geojson"
+  "texts.geojson"
 ]
