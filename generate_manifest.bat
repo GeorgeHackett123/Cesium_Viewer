@@ -5,9 +5,8 @@ set "data_dir=data"
 set "output_file=%data_dir%\manifest_other.json"
 set "exclude=camera_points_final.geojson"
 
-(
-    echo [
-) > "%output_file%"
+rem Initialize output file
+> "%output_file%" echo [
 
 set "first=1"
 for %%f in (%data_dir%\*.geojson) do (
@@ -16,12 +15,12 @@ for %%f in (%data_dir%\*.geojson) do (
         if !first! == 1 (
             >> "%output_file%" echo,
         )
-        >> "%output_file%" echo     "%%~nxf"
+        >> "%output_file%" echo     "!filename!"
         set "first=0"
     )
 )
 
 >> "%output_file%" echo ]
 
-echo ✅ JSON manifest created: %output_file%
+echo ✅ manifest_other.json generated successfully.
 pause
