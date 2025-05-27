@@ -1,5 +1,10 @@
-[
-  "camera_points1.geojson",
-  "camera_points2.geojson",
-  "camera_points3.geojson"
-]
+[ 
+    \"blocks.geojson\" 
+,    \"camera_points_final.geojson\" 
+,    \"hatches.geojson\" 
+,    \"inserts.geojson\" 
+,    \"lines.geojson\" 
+,    \"points.geojson\" 
+,    \"polylines.geojson\" 
+,    \"texts.geojson\" 
+] 
