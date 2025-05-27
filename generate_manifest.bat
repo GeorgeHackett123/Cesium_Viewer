@@ -5,23 +5,23 @@ set "data_dir=data"
 set "output_file=%data_dir%\manifest_other.json"
 set "exclude=camera_points_final.geojson"
 
-rem Build manifest in memory first
-set "manifest="
-
-for %%f in (%data_dir%\*.geojson) do (
-    set "filename=%%~nxf"
-    if /i not "!filename!"=="%exclude%" (
-        if defined manifest (
-            set "manifest=!manifest!,"
+(
+    echo [
+    set "first=1"
+    for %%f in (%data_dir%\*.geojson) do (
+        set "filename=%%~nxf"
+        if /i not "!filename!"=="%exclude%" (
+            if !first! == 1 (
+                set "first=0"
+            ) else (
+                echo,
+            )
+            <nul set /p="    "!filename!""
         )
-        set "manifest=!manifest!\"!filename!\""
     )
-)
+    echo
+    echo ]
+) > "%output_file%"
 
-rem Write to file
-> "%output_file%" echo [
->> "%output_file%" echo !manifest!
->> "%output_file%" echo ]
-
-echo ✅ Fixed manifest generated: %output_file%
+echo ✅ manifest_other.json successfully created at: %output_file%
 pause
