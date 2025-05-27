@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>CesiumJS Viewer</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marzipano@0.10.1/dist/marzipano.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet"/>
+  <style>
+    html, body, #cesiumContainer {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    #imagePopup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50vw;
+      height: 50vh;
+      background: white;
+      border: 1px solid #ccc;
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+    }
+    #pano {
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+    }
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="imagePopup">
+    <span class="close-btn" onclick="document.getElementById('imagePopup').style.display='none';">✖</span>
+    <div id="pano"></div>
+  </div>
+  <script type="module">
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0ZWQ4ZTE5ZC0wOTMxLTQ0YTEtOGVlYy00MWQ1YWM0NDcxNTYiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDgzNDgwOTR9.kCuvoIJoaF-flGQAYcV8-suLFAAe9u-lO5tnsVnpTZ0';
+
+    async function init() {
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+        baseLayerPicker: true,
+        timeline: false,
+        animation: false
+      });
+
+      const cameraGeoJSON = './data/camera_points_final.geojson';
+      const dataSource = await Cesium.GeoJsonDataSource.load(cameraGeoJSON);
+      viewer.dataSources.add(dataSource);
+
+      const otherManifest = await fetch('./data/manifest_other_v2.json')
+        .then(r => r.json())
+        .catch(e => { console.error("❌ Failed to load manifest:", e); return []; });
+
+      for (const file of otherManifest) {
+        try {
+          const overlay = await Cesium.GeoJsonDataSource.load(`./data/${file}`);
+          viewer.dataSources.add(overlay);
+        } catch (e) {
+          console.error(`❌ Failed to load overlay ${file}:`, e);
+        }
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
