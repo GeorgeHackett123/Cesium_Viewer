@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ... (head content remains the same) ... -->
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<!-- ... (popup elements remain the same) ... -->
+
+<script type="module">
+    // Updated Ion token
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1YzAwNWVmYy00MThkLTRlZDItOTUwNC1mYWJkZGRkNmJiOTMiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDg1MTUyMjJ9.BkEDuO-b3vd84Mi1tuCMJL2XoadyIR7OWvG72M2ofAg';
+
+    async function init() {
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+        baseLayerPicker: true,
+        timeline: false,
+        animation: false,
+        infoBox: false,
+        selectionIndicator: false
+      });
+
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+
+      // Load camera points GeoJSON
+      const cameraGeojsonUrl = 'camera_points_final.geojson';
+      const cameraDataSource = await Cesium.GeoJsonDataSource.load(cameraGeojsonUrl, {
+        clampToGround: false
+      });
+
+      viewer.dataSources.add(cameraDataSource);
+      viewer.flyTo(cameraDataSource);
+
+      // ... (existing camera points processing code) ...
+
+      // ====== FIXED VECTOR DATA LOADING ======
+      const vectorGeojsonUrl = 'https://raw.githubusercontent.com/GeorgeHackett123/Cesium_Viewer/de9d065eb8e3a66f1afddefd73d906c8b5969d6e/lines.geojson';
+      
+      try {
+        // NEW: Improved loading with progress indication
+        console.log("Loading vector data from:", vectorGeojsonUrl);
+        
+        // NEW: Use fetch to get the GeoJSON first
+        const response = await fetch(vectorGeojsonUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const geojson = await response.json();
+        console.log("GeoJSON loaded successfully", geojson);
+        
+        // NEW: Process the GeoJSON manually
+        const vectorDataSource = new Cesium.GeoJsonDataSource();
+        await vectorDataSource.load(geojson, {
+          clampToGround: true,
+          stroke: Cesium.Color.CYAN,
+          strokeWidth: 3
+        });
+        
+        viewer.dataSources.add(vectorDataSource);
+        console.log("Vector data processed successfully");
+        
+        // Style vector features
+        const vectorEntities = vectorDataSource.entities.values;
+        console.log(`Found ${vectorEntities.length} vector features`);
+        
+        for (let i = 0; i < vectorEntities.length; i++) {
+          const entity = vectorEntities[i];
+          
+          // NEW: Better error handling for each entity
+          try {
+            // Style lines (since your file is lines.geojson)
+            if (entity.polyline) {
+              entity.polyline.material = new Cesium.PolylineGlowMaterialProperty({
+                glowPower: 0.2,
+                color: Cesium.Color.fromRandom({
+                  minimumRed: 0.2,
+                  minimumGreen: 0.2,
+                  minimumBlue: 0.8,
+                  alpha: 1.0
+                })
+              });
+              entity.polyline.width = 4;
+              console.log(`Styled line entity: ${entity.id || i}`);
+            }
+            
+            // Add metadata property
+            entity.vectorData = true;
+          } catch (entityError) {
+            console.error(`Error styling vector entity ${i}:`, entityError);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading vector data:", error);
+        // NEW: Show error message in console with more details
+        console.error("Full error details:", error.message, error.stack);
+        
+        // NEW: Show error to user
+        const errorEntity = viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(-74.0, 40.7, 100),
+          label: {
+            text: 'Vector data failed to load!',
+            font: '14px sans-serif',
+            fillColor: Cesium.Color.RED,
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE
+          }
+        });
+        viewer.flyTo(errorEntity);
+      }
+
+      // ... (existing click handler code) ...
+    }
+
+    init();
+</script>
+</body>
+</html>
