@@ -75,6 +75,33 @@
 <script type="module">
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1YzAwNWVmYy00MThkLTRlZDItOTUwNC1mYWJkZGRkNmJiOTMiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDg1MTUyMjJ9.BkEDuO-b3vd84Mi1tuCMJL2XoadyIR7OWvG72M2ofAg';
 
+    // Add your new layer filenames here (relative to your HTML)
+    const extraGeojsons = [
+      "layer_0.geojson",
+      "layer_C-TOPO-MAJR.geojson",
+      "layer_C-TOPO-MINR.geojson",
+      "layer_LEG-TECNICO.geojson",
+      "layer_MATRÍCULA.geojson",
+      "layer_SBL-SIMBOLOGIA.geojson",
+      "layer_TALUDE.geojson",
+      "layer_TOP-DRENAGEM.geojson",
+      "layer_TOP-ELETRICA.geojson",
+      "layer_TOPO-BORDO.geojson",
+      "layer_TOPO-ELÉTRICA.geojson",
+      "layer_TOPO-SIMBOLO.geojson",
+      "layer_TOPO-SIMBOLOGIA.geojson",
+      "layer_TOPO-SINALIZACAO.geojson",
+      "layer_TOP-VEGETACAO.geojson"
+    ];
+
+    // Optional: assign each layer a color
+    const geojsonColors = [
+      Cesium.Color.YELLOW, Cesium.Color.ORANGE, Cesium.Color.RED, Cesium.Color.PURPLE,
+      Cesium.Color.LIME, Cesium.Color.AQUA, Cesium.Color.BLUE, Cesium.Color.FUCHSIA,
+      Cesium.Color.MAGENTA, Cesium.Color.CYAN, Cesium.Color.OLIVE, Cesium.Color.NAVY,
+      Cesium.Color.MAROON, Cesium.Color.BROWN, Cesium.Color.GREEN
+    ];
+
     async function init() {
       const viewer = new Cesium.Viewer('cesiumContainer', {
         terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
@@ -125,24 +152,13 @@
         entity.popupImageURL = imageURL;
         entity.popupLabel = labelText;
 
-        // Force all points to be elevated slightly above the terrain
+        // Elevate above terrain
         const now = Cesium.JulianDate.now();
         const carto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(now));
         const [updated] = await Cesium.sampleTerrainMostDetailed(viewer.terrainProvider, [carto]);
         const adjustedHeight = updated.height + 1.5;
         const newPosition = Cesium.Cartesian3.fromRadians(carto.longitude, carto.latitude, adjustedHeight);
         entity.position = new Cesium.ConstantPositionProperty(newPosition);
-
-        // Skip static orientation lines — replaced with dynamic 3D cone
-        if (heading !== undefined) {
-          const yawDeg = parseFloat(heading);
-          const yawRad = Cesium.Math.toRadians(yawDeg);
-          const startCarto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(Cesium.JulianDate.now()));
-          const length = 15; // meters
-          const endLat = startCarto.latitude + (length * Math.cos(yawRad)) / 6378137.0;
-          const endLon = startCarto.longitude + (length * Math.sin(yawRad)) / (6378137.0 * Math.cos(startCarto.latitude));
-          const endPos = Cesium.Cartesian3.fromRadians(endLon, endLat, startCarto.height);
-        }
       }
 
       const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -157,16 +173,15 @@
           panoElement.innerHTML = '';
 
           try {
-            const panoViewer = new Marzipano.Viewer(panoElement, { stageType: 'webgl' });
+            if (window.panoViewer) window.panoViewer.destroy(); // Clean up old viewer if exists
+            window.panoViewer = new Marzipano.Viewer(panoElement, { stageType: 'webgl' });
             const source = Marzipano.ImageUrlSource.fromString(picked.id.popupImageURL);
             const geometry = new Marzipano.EquirectGeometry([{ width: 1536 }]);
             const limiter = Marzipano.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
             const view = new Marzipano.RectilinearView(null, limiter);
-            const scene = panoViewer.createScene({ source, geometry, view });
+            const scene = window.panoViewer.createScene({ source, geometry, view });
 
             setTimeout(() => { 
-              console.log("✅ Marzipano scene initialized for:", picked.id.popupImageURL);
-              panoElement.style.height = "100%";
               scene.switchTo();
               panoElement.style.display = 'block';
               panoElement.style.width = '100%';
@@ -174,7 +189,7 @@
               panoElement.querySelector('canvas').style.width = '100%';
               panoElement.querySelector('canvas').style.height = '100%';
 
-              // === Add dynamic 3D frustum cone (4-point) ===
+              // 3D frustum cones (unchanged)
               const position = picked.id.position.getValue(Cesium.JulianDate.now());
               const existingCone = viewer.entities.getById('viewCone');
               if (existingCone) viewer.entities.remove(existingCone);
@@ -182,10 +197,10 @@
               function updateFrustumCone() {
                 const rawYaw = parseFloat(picked.id.properties['Yaw_est'].getValue());
                 const viewerYaw = Cesium.Math.toDegrees(view.yaw());
-                const yaw = Cesium.Math.toRadians((rawYaw + viewerYaw + 75) % 360); // radians
+                const yaw = Cesium.Math.toRadians((rawYaw + viewerYaw + 75) % 360);
                 const length = 10.0;
-                const halfFov = Cesium.Math.toRadians(22.5); // half of 45° FOV
-                const heightOffset = 2.0; // for vertical elevation of the far edge
+                const halfFov = Cesium.Math.toRadians(22.5);
+                const heightOffset = 2.0;
 
                 const carto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(position);
                 const lat = carto.latitude;
@@ -211,7 +226,6 @@
                   viewer.entities.removeById('viewCone3');
                 }
 
-                // Triangle 1: apex → left → center
                 viewer.entities.add({
                   id: 'viewCone1',
                   name: 'Frustum Triangle 1',
@@ -221,8 +235,6 @@
                     perPositionHeight: true
                   }
                 });
-
-                // Triangle 2: apex → center → right
                 viewer.entities.add({
                   id: 'viewCone2',
                   name: 'Frustum Triangle 2',
@@ -232,8 +244,6 @@
                     perPositionHeight: true
                   }
                 });
-
-                // Triangle 3: apex → right → left (optional closure)
                 viewer.entities.add({
                   id: 'viewCone3',
                   name: 'Frustum Triangle 3',
@@ -262,7 +272,7 @@
         }
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-      // ----------- UTM 23S (SIRGAS2000) to WGS84 Conversion Helpers -------------
+      // UTM23S SIRGAS2000 → WGS84
       function utm23sToWgs84(coords) {
         return proj4(
           "+proj=utm +zone=23 +south +datum=SIRGAS2000 +units=m +no_defs",
@@ -298,34 +308,36 @@
         return geojson;
       }
 
-      // ----------- Load & Reproject lines.geojson and add to Cesium (with error logging) -------------
-      fetch('lines.geojson')
-        .then(resp => {
-          if (!resp.ok) throw new Error("Failed to fetch lines.geojson: " + resp.statusText);
-          return resp.json();
-        })
-        .then(data => {
-          try {
-            reprojectGeojsonUTM23SToWGS84(data);
-            Cesium.GeoJsonDataSource.load(data, { 
+      // --- Load all extra GeoJSON layers (each in UTM, browser-reprojected) ---
+      extraGeojsons.forEach((filename, idx) => {
+        fetch(filename)
+          .then(resp => {
+            if (!resp.ok) throw new Error(filename + ": " + resp.statusText);
+            return resp.json();
+          })
+          .then(data => {
+            try {
+              reprojectGeojsonUTM23SToWGS84(data);
+              Cesium.GeoJsonDataSource.load(data, { 
                 clampToGround: true, 
-                stroke: Cesium.Color.YELLOW, 
+                stroke: geojsonColors[idx % geojsonColors.length], 
                 strokeWidth: 2 
-            }).then(linesDataSource => {
-                viewer.dataSources.add(linesDataSource);
-            }).catch(e => {
-                console.error("❌ Cesium failed to load lines.geojson:", e);
-                alert("Cesium failed to load lines.geojson: " + e);
-            });
-          } catch (err) {
-            console.error("❌ Error processing/reprojecting lines.geojson:", err);
-            alert("Error processing/reprojecting lines.geojson: " + err);
-          }
-        })
-        .catch(err => {
-          console.error("❌ Fetch error:", err);
-          alert("Fetch error: " + err);
-        });
+              }).then(ds => {
+                viewer.dataSources.add(ds);
+              }).catch(e => {
+                console.error("❌ Cesium failed to load " + filename + ":", e);
+                alert("Cesium failed to load " + filename + ": " + e);
+              });
+            } catch (err) {
+              console.error("❌ Error reprojecting " + filename + ":", err);
+              alert("Error reprojecting " + filename + ": " + err);
+            }
+          })
+          .catch(err => {
+            console.error("❌ Fetch error:", err);
+            // Don't alert for every file, just log
+          });
+      });
 
     } // end of init()
 

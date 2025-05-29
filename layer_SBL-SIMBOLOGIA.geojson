@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "layer_SBL-SIMBOLOGIA",
+"xy_coordinate_resolution": 1e-15,
+"features": [
+{ "type": "Feature", "properties": { "fid": 84706, "handle": 79085, "block": -1, "etype": 17, "space": 0, "layer": "SBL-SIMBOLOGIA", "olinetype": "bylayer", "linetype": "", "color": "0,0,0,255", "ocolor": 7, "color24": -1, "transparency": 0, "lweight": -1, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": null, "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 1037.123786942800507, 262.406431108247489, 0.0 ], [ 1035.939620891847881, 263.69385544443503, 0.0 ] ] } },
+{ "type": "Feature", "properties": { "fid": 84707, "handle": 79086, "block": -1, "etype": 17, "space": 0, "layer": "SBL-SIMBOLOGIA", "olinetype": "bylayer", "linetype": "", "color": "0,0,0,255", "ocolor": 7, "color24": -1, "transparency": 0, "lweight": -1, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": null, "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 1035.939620891847881, 263.69385544443503, 0.0 ], [ 1033.048515434144065, 267.835126359481364, 0.0 ] ] } },
+{ "type": "Feature", "properties": { "fid": 84708, "handle": 79087, "block": -1, "etype": 17, "space": 0, "layer": "SBL-SIMBOLOGIA", "olinetype": "bylayer", "linetype": "", "color": "0,0,0,255", "ocolor": 7, "color24": -1, "transparency": 0, "lweight": -1, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": null, "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 1034.372353643630049, 264.946476557757705, 0.0 ], [ 1034.407182550334255, 262.823979682289064, 0.0 ] ] } }
+]
+}
