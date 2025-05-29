@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>CesiumJS Viewer with 360 Image and Vector Layers</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marzipano@0.10.1/dist/marzipano.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet"/>
+<style>
+    html, body, #cesiumContainer {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #imagePopup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50vw;
+      height: 50vh;
+      display: none;
+      flex-direction: column;
+      background: white;
+      border: 2px solid #888;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      z-index: 999;
+    }
+    #pano {
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: block;
+      overflow: hidden;
+    }
+    .marzipano-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      margin: 0;
+      padding: 0;
+    }
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      color: #888;
+    }
+    #popupLabel {
+      font-size: 14px;
+      padding-top: 5px;
+    }
+    
+    /* Vector popup styles */
+    #vectorPopup {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 300px;
+      max-height: 70vh;
+      display: none;
+      background: white;
+      border: 2px solid #888;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      padding: 15px;
+      overflow-y: auto;
+      z-index: 998;
+    }
+    #vectorPopupContent {
+      font-size: 14px;
+    }
+    .vector-popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .vector-close-btn {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      color: #888;
+    }
+    .property-row {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .property-name {
+      font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="imagePopup">
+  <span class="close-btn" onclick="document.getElementById('imagePopup').style.display='none';">✖</span>
+  <div id="pano"></div>
+  <div id="popupLabel"><strong>Label</strong></div>
+</div>
+<div id="vectorPopup">
+  <div class="vector-popup-header">
+    <h3 id="vectorPopupTitle">Feature Details</h3>
+    <span class="vector-close-btn" onclick="document.getElementById('vectorPopup').style.display='none';">✖</span>
+  </div>
+  <div id="vectorPopupContent"></div>
+</div>
+
+<script type="module">
+    // Updated Ion token
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1YzAwNWVmYy00MThkLTRlZDItOTUwNC1mYWJkZGRkNmJiOTMiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDg1MTUyMjJ9.BkEDuO-b3vd84Mi1tuCMJL2XoadyIR7OWvG72M2ofAg';
+
+    async function init() {
+      const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+        baseLayerPicker: true,
+        timeline: false,
+        animation: false,
+        infoBox: false,
+        selectionIndicator: false
+      });
+
+      viewer.scene.globe.depthTestAgainstTerrain = true;
+
+      // Load camera points GeoJSON
+      const cameraGeojsonUrl = 'camera_points_final.geojson';
+      const cameraDataSource = await Cesium.GeoJsonDataSource.load(cameraGeojsonUrl, {
+        clampToGround: false
+      });
+
+      viewer.dataSources.add(cameraDataSource);
+      viewer.flyTo(cameraDataSource);
+
+      const entities = cameraDataSource.entities.values;
+
+      for (let i = 0; i < entities.length; i++) {
+        const entity = entities[i];
+        const labelText = entity.properties?.['#Label'];
+        entity.billboard = undefined;
+        const heading = entity.properties?.['Yaw_est'];
+        const imageURL = `images/${labelText}`;
+
+        entity.point = new Cesium.PointGraphics({
+          pixelSize: 10,
+          color: Cesium.Color.RED,
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 1
+        });
+
+        entity.label = new Cesium.LabelGraphics({
+          text: labelText || "Camera",
+          show: false,
+          font: '14px sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -15)
+        });
+
+        entity.popupImageURL = imageURL;
+        entity.popupLabel = labelText;
+
+        // Force all points to be elevated slightly above the terrain
+        const now = Cesium.JulianDate.now();
+        const carto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(now));
+        const [updated] = await Cesium.sampleTerrainMostDetailed(viewer.terrainProvider, [carto]);
+        const adjustedHeight = updated.height + 1.5;
+        const newPosition = Cesium.Cartesian3.fromRadians(carto.longitude, carto.latitude, adjustedHeight);
+        entity.position = new Cesium.ConstantPositionProperty(newPosition);
+
+        // Skip static orientation lines — replaced with dynamic 3D cone
+        if (heading !== undefined) {
+          const yawDeg = parseFloat(heading);
+          const yawRad = Cesium.Math.toRadians(yawDeg);
+          const startCarto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(Cesium.JulianDate.now()));
+          const length = 15; // meters
+          const endLat = startCarto.latitude + (length * Math.cos(yawRad)) / 6378137.0;
+          const endLon = startCarto.longitude + (length * Math.sin(yawRad)) / (6378137.0 * Math.cos(startCarto.latitude));
+          const endPos = Cesium.Cartesian3.fromRadians(endLon, endLat, startCarto.height);
+        }
+      }
+
+      // Load vector data GeoJSON
+      const vectorGeojsonUrl = 'https://raw.githubusercontent.com/GeorgeHackett123/Cesium_Viewer/de9d065eb8e3a66f1afddefd73d906c8b5969d6e/lines.geojson';
+      
+      try {
+        const vectorDataSource = await Cesium.GeoJsonDataSource.load(vectorGeojsonUrl, {
+          clampToGround: true,
+          stroke: Cesium.Color.CYAN,
+          strokeWidth: 3,
+          markerSymbol: '?'
+        });
+        
+        viewer.dataSources.add(vectorDataSource);
+        
+        // Style vector features
+        const vectorEntities = vectorDataSource.entities.values;
+        for (let i = 0; i < vectorEntities.length; i++) {
+          const entity = vectorEntities[i];
+          
+          // Style points
+          if (entity.point) {
+            entity.point = new Cesium.PointGraphics({
+              pixelSize: 8,
+              color: Cesium.Color.GREEN,
+              outlineColor: Cesium.Color.WHITE,
+              outlineWidth: 1
+            });
+          }
+          
+          // Style lines
+          if (entity.polyline) {
+            entity.polyline.material = new Cesium.PolylineGlowMaterialProperty({
+              glowPower: 0.2,
+              color: Cesium.Color.CYAN
+            });
+            entity.polyline.width = 4;
+          }
+          
+          // Style polygons
+          if (entity.polygon) {
+            entity.polygon.material = Cesium.Color.ORANGE.withAlpha(0.4);
+            entity.polygon.outline = true;
+            entity.polygon.outlineColor = Cesium.Color.ORANGE;
+          }
+          
+          // Add metadata property
+          entity.vectorData = true;
+        }
+      } catch (error) {
+        console.error("Error loading vector data:", error);
+      }
+
+      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+      handler.setInputAction((movement) => {
+        const picked = viewer.scene.pick(movement.position);
+        
+        // Hide both popups when clicking elsewhere
+        if (!picked || !picked.id) {
+          document.getElementById('imagePopup').style.display = 'none';
+          document.getElementById('vectorPopup').style.display = 'none';
+          
+          // Hide all labels when clicking elsewhere
+          for (const entity of cameraDataSource.entities.values) {
+            if (entity.label) {
+              entity.label.show = false;
+            }
+          }
+          return;
+        }
+
+        // Handle camera points
+        if (picked.id && picked.id.popupImageURL) {
+          // Hide vector popup
+          document.getElementById('vectorPopup').style.display = 'none';
+          
+          // Show image popup
+          const popup = document.getElementById('imagePopup');
+          popup.style.display = 'flex';
+
+          const panoElement = document.getElementById('pano');
+          const label = document.getElementById('popupLabel');
+          panoElement.innerHTML = '';
+
+          try {
+            const panoViewer = new Marzipano.Viewer(panoElement, { stageType: 'webgl' });
+            const source = Marzipano.ImageUrlSource.fromString(picked.id.popupImageURL);
+            const geometry = new Marzipano.EquirectGeometry([{ width: 1536 }]);
+            const limiter = Marzipano.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+            const view = new Marzipano.RectilinearView(null, limiter);
+            const scene = panoViewer.createScene({ source, geometry, view });
+
+            setTimeout(() => { 
+              console.log("✅ Marzipano scene initialized for:", picked.id.popupImageURL);
+              panoElement.style.height = "100%";
+              scene.switchTo();
+              panoElement.style.display = 'block';
+              panoElement.style.width = '100%';
+              panoElement.style.height = '100%';
+              panoElement.querySelector('canvas').style.width = '100%';
+              panoElement.querySelector('canvas').style.height = '100%';
+
+              // === Add dynamic 3D frustum cone (4-point) ===
+              const position = picked.id.position.getValue(Cesium.JulianDate.now());
+              const existingCone = viewer.entities.getById('viewCone');
+              if (existingCone) viewer.entities.remove(existingCone);
+
+              function updateFrustumCone() {
+                const rawYaw = parseFloat(picked.id.properties['Yaw_est'].getValue());
+                const viewerYaw = Cesium.Math.toDegrees(view.yaw());
+                const yaw = Cesium.Math.toRadians((rawYaw + viewerYaw + 75) % 360); // radians
+                const length = 10.0;
+                const halfFov = Cesium.Math.toRadians(22.5); // half of 45° FOV
+                const heightOffset = 2.0; // for vertical elevation of the far edge
+
+                const carto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(position);
+                const lat = carto.latitude;
+                const lon = carto.longitude;
+                const alt = carto.height;
+
+                function offsetPoint(angleOffset) {
+                  const angle = yaw + angleOffset;
+                  const endLat = lat + (length * Math.cos(angle)) / 6378137.0;
+                  const endLon = lon + (length * Math.sin(angle)) / (6378137.0 * Math.cos(lat));
+                  return Cesium.Cartesian3.fromRadians(endLon, endLat, alt + heightOffset);
+                }
+
+                const left = offsetPoint(-halfFov);
+                const right = offsetPoint(halfFov);
+                const center = offsetPoint(0);
+                const apex = Cesium.Cartesian3.fromRadians(lon, lat, alt);
+
+                const old = viewer.entities.getById('viewCone1');
+                if (old) {
+                  viewer.entities.removeById('viewCone1');
+                  viewer.entities.removeById('viewCone2');
+                  viewer.entities.removeById('viewCone3');
+                }
+
+                // Triangle 1: apex → left → center
+                viewer.entities.add({
+                  id: 'viewCone1',
+                  name: 'Frustum Triangle 1',
+                  polygon: {
+                    hierarchy: new Cesium.PolygonHierarchy([apex, left, center]),
+                    material: Cesium.Color.LIME.withAlpha(0.4),
+                    perPositionHeight: true
+                  }
+                });
+
+                // Triangle 2: apex → center → right
+                viewer.entities.add({
+                  id: 'viewCone2',
+                  name: 'Frustum Triangle 2',
+                  polygon: {
+                    hierarchy: new Cesium.PolygonHierarchy([apex, center, right]),
+                    material: Cesium.Color.LIME.withAlpha(0.4),
+                    perPositionHeight: true
+                  }
+                });
+
+                // Triangle 3: apex → right → left (optional closure)
+                viewer.entities.add({
+                  id: 'viewCone3',
+                  name: 'Frustum Triangle 3',
+                  polygon: {
+                    hierarchy: new Cesium.PolygonHierarchy([apex, right, left]),
+                    material: Cesium.Color.LIME.withAlpha(0.2),
+                    perPositionHeight: true
+                  }
+                });
+              }
+
+              updateFrustumCone();
+              view.addEventListener('change', updateFrustumCone);
+            }, 100);
+            label.innerHTML = `<strong>${picked.id.popupLabel}</strong>`;
+            
+            // Hide all labels except the selected one
+            for (const ent of cameraDataSource.entities.values) {
+              if (ent.label) {
+                ent.label.show = false;
+              }
+            }
+            picked.id.label.show = true;
+          } catch (err) {
+            console.error("❌ Marzipano failed to initialize:", err);
+            panoElement.innerHTML = `<p style="color:red;">360 viewer failed to load.</p>`;
+          }
+        } 
+        // Handle vector features
+        else if (picked.id.vectorData && picked.id.properties) {
+          // Hide image popup
+          document.getElementById('imagePopup').style.display = 'none';
+          
+          // Hide all camera labels
+          for (const ent of cameraDataSource.entities.values) {
+            if (ent.label) {
+              ent.label.show = false;
+            }
+          }
+          
+          const popup = document.getElementById('vectorPopup');
+          const content = document.getElementById('vectorPopupContent');
+          const title = document.getElementById('vectorPopupTitle');
+          
+          popup.style.display = 'block';
+          
+          // Get properties
+          const properties = picked.id.properties;
+          const propertyNames = properties.propertyNames;
+          
+          // Generate HTML content
+          let html = '';
+          for (let i = 0; i < propertyNames.length; i++) {
+            const propName = propertyNames[i];
+            // Skip complex types
+            if (propName === 'geometry') continue;
+            
+            try {
+              const propValue = properties[propName].getValue(Cesium.JulianDate.now());
+              html += `
+                <div class="property-row">
+                  <div class="property-name">${propName}</div>
+                  <div class="property-value">${propValue || 'N/A'}</div>
+                </div>
+              `;
+            } catch (e) {
+              console.log(`Skipping property ${propName}:`, e.message);
+            }
+          }
+          
+          // Set title and content
+          const nameProps = ['name', 'NAME', 'Name', 'id', 'ID', 'feature_id'];
+          let featureName = 'Feature Details';
+          
+          for (const prop of nameProps) {
+            if (properties[prop]) {
+              try {
+                featureName = properties[prop].getValue(Cesium.JulianDate.now()) || featureName;
+                break;
+              } catch (e) {
+                continue;
+              }
+            }
+          }
+          
+          title.textContent = featureName;
+          content.innerHTML = html || '<p>No metadata available</p>';
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
+
+    init();
+</script>
+</body>
+</html>
