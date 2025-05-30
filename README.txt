@@ -29,8 +29,8 @@ HOW TO USE
      - The filename is set in build_cesium_index.py (CAMERA_POINTS_GEOJSON).
      - Each feature must have a #Label property matching its image filename, and a Yaw_est value.
    - Put all overlay/annotation GeoJSON files (matching layer_*.geojson) in the folder.
-   - Place all 360 images in the images/ folder.
-     - Filenames must match the #Label value in the camera points GeoJSON.
+   - Copy 'image' folder from '2 - Image_EXIF'.
+     - Filenames must match the #Label value in the camera points GeoJSON including .jpg extension.
 
 2. Update Config (if needed):
    - If your camera points GeoJSON is named differently, update CAMERA_POINTS_GEOJSON in build_cesium_index.py.
@@ -45,8 +45,14 @@ HOW TO USE
      - Fill in the template,
      - Output a complete index.html viewer.
 
-4. View your site:
-   - Open index.html in your browser (or upload all contents to your web server/GitHub Pages).
+4. Create GitHub Repository online
+   - Clone GitHub Repository in GitHub Desktop.
+   - Open GitHub Repository folder in Explorer 'Show in Explorer' or 'Ctrl + Shift + F'
+   - Copy all contents of this folder into Repository Folder.
+   - Push origin to GitHub Web Repository.
+   - Build Webpage
+
+4. View your site
 
 -------------------------------------------------------------------------------
 

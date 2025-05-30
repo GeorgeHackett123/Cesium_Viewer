@@ -1,7 +1,6 @@
-{
+﻿{
 "type": "FeatureCollection",
 "name": "layer_C-TOPO-MAJR",
-"xy_coordinate_resolution": 1e-15,
 "features": [
 { "type": "Feature", "properties": { "fid": 8589, "handle": 220978, "block": -1, "etype": 17, "space": 0, "layer": "C-TOPO-MAJR", "olinetype": "continuous", "linetype": "", "color": "255,0,0,255", "ocolor": 10, "color24": -1, "transparency": 0, "lweight": -3, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239897.894127016566927, 7414152.106651097536087, 0.0 ], [ 239899.450333016604418, 7414153.046584097668529, 0.0 ] ] } },
 { "type": "Feature", "properties": { "fid": 8590, "handle": 220979, "block": -1, "etype": 17, "space": 0, "layer": "C-TOPO-MAJR", "olinetype": "continuous", "linetype": "", "color": "255,0,0,255", "ocolor": 10, "color24": -1, "transparency": 0, "lweight": -3, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239899.450333016604418, 7414153.046584097668529, 0.0 ], [ 239901.263940016564447, 7414154.376042097806931, 0.0 ] ] } },

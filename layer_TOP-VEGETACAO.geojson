@@ -1,7 +1,6 @@
-{
+﻿{
 "type": "FeatureCollection",
 "name": "layer_TOP-VEGETACAO",
-"xy_coordinate_resolution": 1e-15,
 "features": [
 { "type": "Feature", "properties": { "fid": 7133, "handle": 194686, "block": -1, "etype": 17, "space": 0, "layer": "TOP-VEGETACAO", "olinetype": "continuous", "linetype": "", "color": "0,255,0,255", "ocolor": 3, "color24": 65280, "transparency": 0, "lweight": -1, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239929.833000000508036, 7414237.217000000178814, 0.0 ], [ 239930.150500000512693, 7414237.217000000178814, 0.0 ] ] } },
 { "type": "Feature", "properties": { "fid": 7134, "handle": 194687, "block": -1, "etype": 17, "space": 0, "layer": "TOP-VEGETACAO", "olinetype": "continuous", "linetype": "", "color": "0,255,0,255", "ocolor": 3, "color24": 65280, "transparency": 0, "lweight": -1, "linewidth": 0.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239922.848000000347383, 7414236.581999999471009, 0.0 ], [ 239923.16550000035204, 7414236.581999999471009, 0.0 ] ] } },

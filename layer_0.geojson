@@ -1,7 +1,6 @@
-{
+﻿{
 "type": "FeatureCollection",
 "name": "layer_0",
-"xy_coordinate_resolution": 1e-15,
 "features": [
 { "type": "Feature", "properties": { "fid": 7053, "handle": 194336, "block": -1, "etype": 17, "space": 0, "layer": "0", "olinetype": "byblock", "linetype": "", "color": "byblock", "ocolor": 0, "color24": -1, "transparency": 0, "lweight": -2, "linewidth": -1.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239822.068404756428208, 7414213.584083390422165, 0.0 ], [ 239822.068404756399104, 7414201.046120202168822, 0.0 ] ] } },
 { "type": "Feature", "properties": { "fid": 7054, "handle": 194337, "block": -1, "etype": 17, "space": 0, "layer": "0", "olinetype": "byblock", "linetype": "", "color": "byblock", "ocolor": 0, "color24": -1, "transparency": 0, "lweight": -2, "linewidth": -1.0, "ltscale": 1.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239828.337386350642191, 7414207.315101796761155, 0.0 ], [ 239815.799423162185121, 7414207.315101796761155, 0.0 ] ] } },

@@ -1,9 +1,8 @@
-{
+﻿{
 "type": "FeatureCollection",
 "name": "layer_TOPO-SIMBOLO",
-"xy_coordinate_resolution": 1e-15,
 "features": [
-{ "type": "Feature", "properties": { "fid": 10959, "handle": 223535, "block": -1, "etype": 17, "space": 0, "layer": "TOPO-SIMBOLO", "olinetype": "byblock", "linetype": "", "color": "255,0,0,79", "ocolor": 256, "color24": -1, "transparency": 0, "lweight": -2, "linewidth": -1.0, "ltscale": 0.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239926.344400109170238, 7414208.882407180033624, 0.0 ], [ 239927.093046024354408, 7414208.882407179102302, 0.0 ] ] } },
-{ "type": "Feature", "properties": { "fid": 10960, "handle": 223536, "block": -1, "etype": 17, "space": 0, "layer": "TOPO-SIMBOLO", "olinetype": "byblock", "linetype": "", "color": "255,0,0,79", "ocolor": 256, "color24": -1, "transparency": 0, "lweight": -2, "linewidth": -1.0, "ltscale": 0.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239925.201157552888617, 7414208.882407180033624, 0.0 ], [ 239926.344400109170238, 7414208.882407180033624, 0.0 ] ] } }
+{ "type": "Feature", "properties": { "fid": 10959, "handle": 223535, "block": -1, "etype": 17, "space": 0, "layer": "TOPO-SIMBOLO", "olinetype": "byblock", "linetype": "", "color": "255,0,0,255", "ocolor": 256, "color24": -1, "transparency": 0, "lweight": -2, "linewidth": -1.0, "ltscale": 0.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239926.344400109170238, 7414208.882407180033624, 0.0 ], [ 239927.093046024354408, 7414208.882407179102302, 0.0 ] ] } },
+{ "type": "Feature", "properties": { "fid": 10960, "handle": 223536, "block": -1, "etype": 17, "space": 0, "layer": "TOPO-SIMBOLO", "olinetype": "byblock", "linetype": "", "color": "255,0,0,255", "ocolor": 256, "color24": -1, "transparency": 0, "lweight": -2, "linewidth": -1.0, "ltscale": 0.0, "visible": 1, "thickness": 0.0, "ext": "(3:0,0,1)", "width": null }, "geometry": { "type": "LineString", "coordinates": [ [ 239925.201157552888617, 7414208.882407180033624, 0.0 ], [ 239926.344400109170238, 7414208.882407180033624, 0.0 ] ] } }
 ]
 }
