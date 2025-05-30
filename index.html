@@ -101,33 +101,35 @@
 </div>
 <div id="geojsonPopup"></div>
 <script type="module">
-    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1YzAwNWVmYy00MThkLTRlZDItOTUwNC1mYWJkZGRkNmJiOTMiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDg1MTUyMjJ9.BkEDuO-b3vd84Mi1tuCMJL2XoadyIR7OWvG72M2ofAg';
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3MWVkZWM4Yi1hYzM2LTRmZDItOGVmZi1hMDliYzZjODA2NWMiLCJpZCI6MzA0NTQyLCJpYXQiOjE3NDg2MDYwMTZ9.IkBgYtVs-cpJykU4FRRGoHFUTaZoRsxYxslpmBnPM4o';
 
     const extraGeojsons = [
-      "layer_0.geojson",
-      "layer_C-TOPO-MAJR.geojson",
-      "layer_C-TOPO-MINR.geojson",
-      "layer_MATRÍCULA.geojson",
-      "layer_SBL-SIMBOLOGIA.geojson",
-      "layer_TALUDE.geojson",
-      "layer_TOP-DRENAGEM.geojson",
-      "layer_TOP-ELETRICA.geojson",
-      "layer_TOPO-BORDO.geojson",
-      "layer_TOPO-ELÉTRICA.geojson",
-      "layer_TOPO-SIMBOLO.geojson",
-      "layer_TOP-VEGETACAO.geojson"
-    ];
+  "layer_0.geojson",
+  "layer_C-TOPO-MAJR.geojson",
+  "layer_C-TOPO-MINR.geojson",
+  "layer_LEG-TEXTO.geojson",
+  "layer_MATRÍCULA.geojson",
+  "layer_SBL-SIMBOLOGIA.geojson",
+  "layer_TALUDE.geojson",
+  "layer_TOP-DRENAGEM.geojson",
+  "layer_TOP-ELETRICA.geojson",
+  "layer_TOP-SIMBOLOGIA.geojson",
+  "layer_TOP-SINALIZACAO.geojson",
+  "layer_TOP-VEGETACAO.geojson",
+  "layer_TOPO-BORDO.geojson",
+  "layer_TOPO-ELÉTRICA.geojson",
+  "layer_TOPO-SIMBOLO.geojson"
+];
 
-    // Custom color mapping (your update)
     const customColors = {
-      "layer_0.geojson": Cesium.Color.WHITE,
-      "layer_C-TOPO-MINR.geojson": Cesium.Color.fromBytes(76,0,0,255),
-      "layer_C-TOPO-MAJR.geojson": Cesium.Color.fromBytes(255,0,0,255),
-      "layer_TALUDE.geojson": Cesium.Color.fromBytes(204,178,102,140),
-      "layer_MATRÍCULA.geojson": Cesium.Color.fromBytes(0,191,255,255),
-      "layer_TOP-VEGETACAO.geojson": Cesium.Color.fromBytes(0,255,0,255),
-      "layer_TOPO-BORDO.geojson": Cesium.Color.fromBytes(0,0,0,98),
-    };
+  "layer_0.geojson": Cesium.Color.WHITE,
+  "layer_C-TOPO-MINR.geojson": Cesium.Color.fromBytes(76,0,0,255),
+  "layer_C-TOPO-MAJR.geojson": Cesium.Color.fromBytes(255,0,0,255),
+  "layer_TALUDE.geojson": Cesium.Color.fromBytes(204,178,102,140),
+  "layer_MATRÍCULA.geojson": Cesium.Color.fromBytes(0,191,255,255),
+  "layer_TOP-VEGETACAO.geojson": Cesium.Color.fromBytes(0,255,0,255),
+  "layer_TOPO-BORDO.geojson": Cesium.Color.fromBytes(0,0,0,98)
+};
 
     const geojsonColors = [
       Cesium.Color.YELLOW, Cesium.Color.ORANGE, Cesium.Color.RED, Cesium.Color.PURPLE,
@@ -166,12 +168,11 @@
         const heading = entity.properties?.['Yaw_est'];
         const imageURL = `images/${labelText}`;
 
-        // CAMERA POINT HALO: now smaller and thinner
         entity.point = new Cesium.PointGraphics({
-          pixelSize: 7,                 // Smaller point
+          pixelSize: 7,
           color: Cesium.Color.RED,
           outlineColor: Cesium.Color.BLACK,
-          outlineWidth: 1               // Thinner halo
+          outlineWidth: 1
         });
 
         entity.label = new Cesium.LabelGraphics({
