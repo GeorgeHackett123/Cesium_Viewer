@@ -1,7 +1,6 @@
 {
 "type": "FeatureCollection",
 "name": "camera_points_final",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::31983" } },
 "features": [
 { "type": "Feature", "properties": { "#Label": "1744746817.613258.jpg", "X/Easting": 239862.918279, "Y/Northing": 7414073.8046319997, "Z/Altitude": 582.633405, "Yaw_est": 133.979678, "Pitch_est": 88.756758, "Roll_est": -48.942544 }, "geometry": { "type": "Point", "coordinates": [ 239862.918279, 7414073.804631999693811, 582.633405 ] } },
 { "type": "Feature", "properties": { "#Label": "1744746822.617807.jpg", "X/Easting": 239862.308934, "Y/Northing": 7414073.5283519998, "Z/Altitude": 582.835748, "Yaw_est": 126.157318, "Pitch_est": 85.662498, "Roll_est": -48.624255 }, "geometry": { "type": "Point", "coordinates": [ 239862.308934, 7414073.528351999819279, 582.835748 ] } },
